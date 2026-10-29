@@ -6,6 +6,7 @@ import {
   Map,
   MapPinned,
   Menu,
+  Newspaper,
   Radio,
   Settings2,
   ShieldCheck,
@@ -130,6 +131,7 @@ export function Sidebar({
           {(
             [
               { id: "stations", label: "Estaciones", icon: MapPinned },
+              { id: "news", label: "Noticias ferroviarias", icon: Newspaper },
               { id: "sources", label: "Fuentes y cobertura", icon: Database },
             ] as const
           ).map(({ id, label, icon: Icon }) => (

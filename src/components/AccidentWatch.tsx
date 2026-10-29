@@ -3,7 +3,9 @@ import {
   ShieldQuestion,
   ArrowUpRight,
   LoaderCircle,
+  X,
 } from "lucide-react";
+import { useState } from "react";
 import type { DataSource, Incident } from "../types";
 import {
   accidentCoverage,
@@ -29,17 +31,38 @@ export function AccidentWatch({
   onSelect: (i: Incident) => void;
 }) {
   const now = useNow();
+  const [dismissed, setDismissed] = useState<string | null>(null);
   const reports = prioritizeIncidents(incidents).filter(
     (i) => accidentEvidence(`${i.title}. ${i.description}`) === "reported",
   );
   const uncertain =
     accidentCoverage(sources, failed, now / 1000) === "unverified";
   const adif = sources.find((s) => s.id === "adif-traffic");
+  const contentKey = JSON.stringify([
+    demo,
+    reports.map((i) => [i.id, i.title, i.description]),
+  ]);
+  if (dismissed === contentKey)
+    return (
+      <button
+        onClick={() => setDismissed(null)}
+        className="mb-5 inline-flex items-center gap-2 text-xs font-medium text-brand-700 hover:underline"
+      >
+        <ShieldQuestion size={15} /> Mostrar comunicados de accidentes
+      </button>
+    );
   return (
     <section
       aria-label="Vigilancia de accidentes publicados"
-      className={`mb-5 rounded-xl border p-4 ${reports.length ? "border-red-200 bg-red-50/70" : "border-amber-200 bg-amber-50/60"}`}
+      className={`relative mb-5 rounded-xl border p-4 pr-12 ${reports.length ? "border-red-200 bg-red-50/70" : "border-amber-200 bg-amber-50/60"}`}
     >
+      <button
+        onClick={() => setDismissed(contentKey)}
+        aria-label="Cerrar comunicados de accidentes"
+        className="absolute right-3 top-3 rounded-lg p-2 text-zinc-500 hover:bg-black/5 hover:text-zinc-800"
+      >
+        <X size={16} />
+      </button>
       <div className="flex items-start gap-3">
         <span className="mt-0.5 shrink-0">
           {loading ? (

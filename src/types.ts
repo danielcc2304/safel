@@ -126,4 +126,4 @@ export interface RailNews {
   checkedAt: number;
 }
 export type Page =
-  "map" | "trains" | "incidents" | "saved" | "stations" | "sources";
+  "map" | "trains" | "incidents" | "saved" | "stations" | "sources" | "news";

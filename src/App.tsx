@@ -89,6 +89,11 @@ const pageDetails: Record<
       "Fuentes públicas, fechas de actualización y límites de cobertura.",
     breadcrumb: "Fuentes y cobertura",
   },
+  news: {
+    title: "Noticias ferroviarias.",
+    description: "Publicaciones recientes sobre la red ferroviaria española.",
+    breadcrumb: "Noticias ferroviarias",
+  },
 };
 function initialPage(): Page {
   const value = window.location.hash.slice(1);
@@ -515,7 +520,7 @@ function App() {
             demo={mode === "demo"}
             onSelect={setIncident}
           />
-          {mode === "live" && (
+          {page === "news" && (
             <RailAccidentNews
               items={data?.railNews || []}
               sources={sources}
