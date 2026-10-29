@@ -46,7 +46,7 @@ export function Stats({
     {
       label: "Fuentes disponibles",
       value: fresh,
-      suffix: ` / ${data?.sources.length || 11}`,
+      suffix: ` / ${data?.sources.length || "…"}`,
       detail: data?.demo
         ? "Entorno de demostración"
         : "Consultas con respuesta válida",

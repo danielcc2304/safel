@@ -29,7 +29,8 @@ export function useNetwork(autoRefresh: boolean) {
       if (
         !Array.isArray(next.trains) ||
         !Array.isArray(next.sources) ||
-        !Array.isArray(next.incidents)
+        !Array.isArray(next.incidents) ||
+        (next.railNews !== undefined && !Array.isArray(next.railNews))
       )
         throw new Error("Respuesta inválida");
       setData(next);

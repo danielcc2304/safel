@@ -26,6 +26,7 @@ Abrir la URL de Vite, normalmente `http://localhost:5173`. Desarrollo y preview 
 - Fecha y antigüedad de cada posición; lectura antigua diferenciada visualmente.
 - Itinerarios y horarios del visor Renfe, próxima parada y llegada prevista, parada anterior, material, accesibilidad y andén cuando se comunican.
 - Boletines de estado de la red y obras de Adif; avisos GTFS de Cercanías. Categorías, fuente, fechas y enlaces originales.
+- Noticias nacionales de accidentes ferroviarios mediante GDELT y fichas JSON de RTVE, en un bloque propio con procedencia y fechas. Son publicaciones periodísticas, separadas de los avisos operativos. [Fuentes y límites](docs/noticias-nacionales.md).
 - Listado de servicios sin coordenadas y contador de avisos sin ubicación verificada.
 - Vigilancia de comunicados sobre accidentes visible en todas las vistas, independiente de filtros y coordenadas; prioridad sobre avisos rutinarios y cobertura incierta explícita.
 - Guardados locales, enlaces compartibles, exportación CSV con telemetría y centro de cambios de demora y comunicados sobre accidentes durante la sesión.

@@ -33,6 +33,7 @@ import { TrainTable } from "./components/TrainTable";
 import { TrainDetail } from "./components/TrainDetail";
 import { BrandMark } from "./components/BrandMark";
 import { AccidentWatch } from "./components/AccidentWatch";
+import { RailAccidentNews } from "./components/RailAccidentNews";
 import { Advertising, AdvertisingPrivacy } from "./components/Advertising";
 import { accidentEvidence } from "./lib/safety";
 import { UnlocatedModal } from "./components/TrainTelemetry";
@@ -513,6 +514,13 @@ function App() {
             demo={mode === "demo"}
             onSelect={setIncident}
           />
+          {mode === "live" && (
+            <RailAccidentNews
+              items={data?.railNews || []}
+              sources={sources}
+              loading={loading && !data}
+            />
+          )}
           {page === "map" && (
             <div className="animate-enter space-y-5">
               <Stats data={data} loading={loading} />
@@ -704,7 +712,7 @@ function App() {
                 />
                 {mode === "demo"
                   ? "Demo"
-                  : `${currentCount}/${sources.length || 11} fuentes disponibles`}
+                  : `${currentCount}/${sources.length || "…"} fuentes disponibles`}
               </span>
             </div>
           </footer>

@@ -105,6 +105,7 @@ export interface UnlocatedTrain {
   sourceId: string;
 }
 export interface NetworkData {
+  railNews?: RailNews[];
   stations?: Stop[];
   trains: Train[];
   incidents: Incident[];
@@ -112,6 +113,16 @@ export interface NetworkData {
   fetchedAt: number;
   demo: boolean;
   unlocatedTrains?: UnlocatedTrain[];
+}
+export interface RailNews {
+  id: string;
+  title: string;
+  url: string;
+  outlet: string;
+  sourceId: string;
+  publishedAt: number | null;
+  indexedAt: number | null;
+  checkedAt: number;
 }
 export type Page =
   "map" | "trains" | "incidents" | "saved" | "stations" | "sources";

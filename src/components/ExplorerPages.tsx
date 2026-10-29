@@ -106,6 +106,11 @@ export function SourcesPage({ data }: { data: NetworkData | null }) {
                   "Boletines HTML de Adif integrados; sin canal interno ni telemetría técnica",
                 ],
                 [
+                  "Noticias de accidentes en España",
+                  "Complementaria",
+                  "GDELT y API de RTVE: titulares seleccionados de las últimas 72 h; no son partes operativos ni confirman que el suceso siga activo",
+                ],
+                [
                   "Velocidad y rumbo",
                   "Parcial",
                   "Campos GTFS si se publican; media estimada solo entre posiciones recientes válidas",
