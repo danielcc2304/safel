@@ -1,0 +1,140 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;450;500;550;600;650;700&family=Manrope:wght@400;500;600;650;700;750;800&display=swap");
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+@theme {
+  --font-sans: "DM Sans", sans-serif;
+  --font-display: "Manrope", sans-serif;
+  --color-brand-50: #eff8f3;
+  --color-brand-100: #ddf1e6;
+  --color-brand-200: #b6dec8;
+  --color-brand-400: #62af88;
+  --color-brand-500: #299365;
+  --color-brand-600: #1d7953;
+  --color-brand-700: #1c6248;
+  --color-brand-800: #1a4c3b;
+  --color-brand-900: #163e31;
+  --color-ink: #242e2c;
+  --color-muted: #808784;
+  --color-line: #e9ece9;
+  --color-canvas: #f6f8f7;
+  --animate-enter: enter 0.4s ease-out both;
+  @keyframes enter {
+    from {
+      opacity: 0;
+      transform: translateY(7px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+@layer base {
+  body {
+    @apply m-0 min-w-80 bg-canvas font-sans text-sm text-ink antialiased;
+  }
+  button,
+  a,
+  input,
+  select {
+    @apply outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2;
+  }
+  button,
+  select {
+    @apply cursor-pointer;
+  }
+  button:disabled {
+    @apply cursor-not-allowed opacity-50;
+  }
+  ::selection {
+    @apply bg-brand-200;
+  }
+}
+/* Leaflet owns geographic positioning; these overrides style its generated DOM. */
+.leaflet-container {
+  font: inherit;
+  background: #eaf1f2;
+  z-index: 0;
+}
+.leaflet-control-attribution {
+  font-size: 11px !important;
+  background: #fffffff2 !important;
+}
+.leaflet-tooltip {
+  border: 0;
+  box-shadow: 0 2px 12px #173e3115;
+  font-family: inherit;
+  color: #35463e;
+}
+.leaflet-tooltip.station-label {
+  background: transparent;
+  box-shadow: none;
+  font-size: 11px;
+  font-weight: 600;
+}
+.leaflet-tooltip.station-label::before {
+  display: none;
+}
+.train-pin {
+  display: grid;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  border: 2px solid #fff;
+  border-radius: 9px;
+  color: white;
+  background: #298c61;
+  box-shadow: 0 2px 6px #12332625;
+  transition: transform 0.2s;
+}
+.train-pin:hover {
+  transform: scale(1.18);
+}
+.train-pin.delayed {
+  background: #d49b37;
+}
+.train-pin.stale {
+  background: #87918c;
+}
+.train-pin.selected {
+  background: #164e39;
+  outline: 5px solid #29936525;
+}
+.train-pin svg {
+  width: 15px;
+  height: 15px;
+}
+.train-cluster {
+  display: grid;
+  place-items: center;
+  width: 33px;
+  height: 33px;
+  border: 4px solid #b6dec8;
+  border-radius: 50%;
+  color: white;
+  background: #287c57;
+  box-shadow: 0 0 0 3px #ffffff90;
+  font-size: 11px;
+  font-weight: 600;
+}
+.alert-pin {
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  background: #fff2df;
+  color: #bc7e22;
+  border: 2px solid white;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px #12332620;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
