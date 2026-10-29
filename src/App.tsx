@@ -33,6 +33,7 @@ import { TrainTable } from "./components/TrainTable";
 import { TrainDetail } from "./components/TrainDetail";
 import { BrandMark } from "./components/BrandMark";
 import { AccidentWatch } from "./components/AccidentWatch";
+import { Advertising, AdvertisingPrivacy } from "./components/Advertising";
 import { accidentEvidence } from "./lib/safety";
 import { UnlocatedModal } from "./components/TrainTelemetry";
 import {
@@ -246,7 +247,7 @@ function App() {
         previous !== undefined &&
         train.delay !== null &&
         previous !== train.delay &&
-        sources.find(
+        data.sources.find(
           (s) =>
             s.id ===
             (train.sourceId === "positions-cerc"
@@ -646,6 +647,7 @@ function App() {
             />
           )}
           {page === "sources" && <SourcesPage data={data} />}
+          <Advertising />
           <div className="mt-6 flex flex-col justify-between gap-3 rounded-lg border border-brand-100/60 bg-brand-50/50 px-4 py-3 sm:flex-row sm:items-center">
             <div className="flex items-start gap-2.5">
               <ShieldCheck
@@ -674,6 +676,7 @@ function App() {
               proyecto independiente.
             </p>
             <div className="flex flex-wrap items-center gap-4">
+              <AdvertisingPrivacy />
               <ExternalLink
                 href="https://data.renfe.com/"
                 className="text-muted"

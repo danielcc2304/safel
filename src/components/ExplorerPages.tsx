@@ -156,9 +156,9 @@ export function SourcesPage({ data }: { data: NetworkData | null }) {
           </h3>
           <p className="my-3 text-xs leading-6 text-muted">
             Adif publica información de tráfico e incidencias de
-            infraestructura. Safel recoge sus boletines públicos cada 5 minutos.
-            La extracción HTML puede fallar o cambiar: consulta el boletín
-            original.
+            infraestructura. Safel consulta el estado de la red cada minuto y
+            los avisos de obras cada 5 minutos. La extracción HTML puede fallar
+            o cambiar: consulta el boletín original.
           </p>
           <ExternalLink
             href="https://www.adif.es/viajeros/estado-de-la-red"
@@ -468,7 +468,7 @@ export function HelpModal({ onClose }: { onClose: () => void }) {
           ],
           [
             "¿Los datos son en tiempo real?",
-            "Safel consulta las posiciones cada 20 segundos con la pestaña visible. Combina el visor Renfe con GTFS como alternativa y conserva la antigüedad de cada posición. Los boletines de Adif se consultan cada 5 minutos. La cadencia del publicador no está garantizada.",
+            "Safel consulta las posiciones cada 20 segundos con la pestaña visible. Combina el visor Renfe con GTFS como alternativa y conserva la antigüedad de cada posición. El estado de la red de Adif se consulta cada minuto y las obras cada 5 minutos. La cadencia del publicador no está garantizada.",
           ],
           [
             "¿Qué velocidad estoy viendo?",

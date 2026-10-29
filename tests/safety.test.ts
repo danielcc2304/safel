@@ -54,6 +54,8 @@ test("accident terminology and reassuring injury statements do not hide a collis
     "Salida de vía",
     "No hay heridos tras el descarrilamiento",
     "No es un simulacro: accidente ferroviario",
+    "Accidente durante un simulacro",
+    "Simulacro suspendido. Se ha producido un accidente real.",
   ])
     assert.equal(accidentEvidence(text), "reported", text);
 });

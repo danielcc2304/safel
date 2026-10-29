@@ -27,7 +27,8 @@ Abrir la URL de Vite, normalmente `http://localhost:5173`. Desarrollo y preview 
 - Itinerarios y horarios del visor Renfe, próxima parada y llegada prevista, parada anterior, material, accesibilidad y andén cuando se comunican.
 - Boletines de estado de la red y obras de Adif; avisos GTFS de Cercanías. Categorías, fuente, fechas y enlaces originales.
 - Listado de servicios sin coordenadas y contador de avisos sin ubicación verificada.
-- Guardados locales, enlaces compartibles, exportación CSV con telemetría y centro de cambios de demora durante la sesión.
+- Vigilancia de comunicados sobre accidentes visible en todas las vistas, independiente de filtros y coordenadas; prioridad sobre avisos rutinarios y cobertura incierta explícita.
+- Guardados locales, enlaces compartibles, exportación CSV con telemetría y centro de cambios de demora y comunicados sobre accidentes durante la sesión.
 - Catálogo de estaciones de Renfe independiente de los trenes localizados, panel de cobertura, preferencias, navegación móvil y diálogos accesibles.
 
 ## Fuentes integradas
@@ -43,7 +44,7 @@ Abrir la URL de Vite, normalmente `http://localhost:5173`. Desarrollo y preview 
 | Actualizaciones Cercanías           | https://gtfsrt.renfe.com/trip_updates.json                                          | Cadencia publicada 30 s                                          |
 | Avisos Cercanías                    | https://gtfsrt.renfe.com/alerts.json                                                | Cadencia publicada 20 s                                          |
 | Horarios GTFS AV/LD/MD              | https://ssl.renfe.com/gtransit/Fichero_AV_LD/google_transit.zip                     | Consulta cada 12 h                                               |
-| Adif · estado de la red             | https://www.adif.es/viajeros/estado-de-la-red                                       | Boletines HTML, consulta cada 5 min                              |
+| Adif · estado de la red             | https://www.adif.es/viajeros/estado-de-la-red                                       | Boletines HTML y avisos destacados, consulta cada minuto         |
 | Adif · avisos y obras               | https://www.adif.es/viajeros/avisos                                                 | Resúmenes HTML y enlace al boletín, consulta cada 5 min          |
 
 Los recursos del visor son públicos pero no constituyen una API contractual: pueden cambiar. Los boletines de Adif se extraen de sus páginas públicas, sin acceso a sistemas internos. Si cambia la estructura, la fuente se marca no disponible/desactualizada: no se convierte el error en cero avisos. Se distingue entre fecha individual del aviso, actualización de la página y hora de consulta; nunca se inventa una fecha de publicación.
@@ -74,6 +75,12 @@ Se muestran boletines públicos de Adif sobre tráfico, catenarias, obras o acci
 
 La categoría se organiza mediante términos del texto. La afectación alta en Adif indica una suspensión explícitamente comunicada, no una probabilidad de accidente. En GTFS se utilizan efectos de servicio explícitos. Los avisos con fecha de fin vencida se excluyen; un aviso antiguo abierto conserva su antigüedad y no se da por vigente o resuelto automáticamente.
 
+El bloque prioritario reúne todas las menciones de accidente recuperadas, aunque no tengan ubicación o queden fuera de los filtros del mapa. La clasificación textual distingue referencias explícitas a simulacros, aniversarios y ausencia de accidentes; sigue siendo heurística y puede omitir otras formulaciones o generar falsos positivos. Los recuentos corresponden a comunicados, no a sucesos únicos ni a accidentes confirmados en este momento. Las fechas desconocidas se mantienen como desconocidas.
+
+La cobertura nunca se califica como completa: incluso con consultas correctas es parcial. Si Adif indica mantenimiento, la extracción es parcial, falla la API o la última consulta tiene más de 3 minutos, se muestra como no verificada. Los fallos conservan las fechas originales de la última respuesta, sin renovar artificialmente su vigencia. La cadencia de consulta y las cachés no garantizan detectar una publicación en un minuto ni detectar un accidente antes de que se publique.
+
+Auditoría y riesgos pendientes: [docs/auditoria-accidentes.md](docs/auditoria-accidentes.md).
+
 Un boletín sin coordenadas verificadas aparece en la lista y en el contador del mapa, sin pin supuesto. Los avisos asociados a un tren requieren identificadores exactos de ruta o parada. Los boletines generales de Adif se muestran separados en el detalle como contexto, con la advertencia de que no existe una relación confirmada con ese tren.
 
 No se integran posiciones de Iryo, OUIGO u otros operadores autonómicos, AEMET, predicción de accidentes ni restricciones temporales completas. Las investigaciones históricas tampoco equivalen a un estado actual de circulación.
@@ -87,6 +94,14 @@ Las capas de [OpenRailwayMap](https://wiki.openstreetmap.org/wiki/OpenRailwayMap
 Los corredores esquemáticos están desactivados inicialmente. La línea discontinua de un tren une puntos del itinerario publicados por Renfe, y no representa el trazado exacto de la vía. No se ajusta una posición GPS a una vía elegida sin evidencia. Los contornos locales solo se dibujan en el modo sin conexión o si falla el mapa base, para no tapar el callejero.
 
 ## Publicar en GitHub y Vercel
+
+### Publicidad
+
+Integración preparada de Google AdSense mediante un componente reutilizable al final del contenido. En desarrollo muestra una vista previa sin conexiones publicitarias; en producción queda apagada sin configuración. Incluye generación de `ads.txt`, verificación del editor, enlace de privacidad y acceso al panel de consentimiento de Google cuando está disponible. No se ha creado ni conectado ninguna cuenta real.
+
+Consultar [.env.example](.env.example) y la [guía de activación](docs/publicidad.md) para configurar editor, bloque adaptable, CMP de Google y variables de Vercel. Antes de monetizar, resolver las condiciones comerciales de las capas ferroviarias indicadas en esa guía.
+
+### Despliegue
 
 1. Subir el proyecto al repositorio sin `node_modules` ni `dist`.
 2. Importar el repositorio en Vercel, con Node.js 24 y preset Vite.
@@ -108,4 +123,4 @@ No desplegar solamente `dist` en un alojamiento estático si se desean datos pú
 - `api/network.ts`: función compatible con Vercel y Vite.
 - `tests/`: integridad de fechas, coordenadas, velocidad, asociaciones y fuentes caídas.
 
-Guardados y preferencias permanecen en `localStorage`, separados por modo público/demostración. Los avisos de demora solo funcionan con Safel abierto; no se envían correos ni notificaciones en segundo plano. No se solicita ubicación personal ni se envían datos de familiares. Los proveedores de mapas reciben las peticiones de teselas seleccionadas. Las tipografías se cargan de Google Fonts y pueden alojarse localmente si se requiere evitar esa conexión.
+Guardados y preferencias permanecen en `localStorage`, separados por modo público/demostración. Los avisos de demora y cambios de comunicados solo funcionan durante la sesión, con Safel abierto; las consultas automáticas requieren la pestaña visible y la actualización activada. No se envían correos ni notificaciones en segundo plano. No se solicita ubicación personal ni se envían datos de familiares. Los proveedores de mapas reciben las peticiones de teselas seleccionadas. Las tipografías se cargan de Google Fonts y pueden alojarse localmente si se requiere evitar esa conexión.

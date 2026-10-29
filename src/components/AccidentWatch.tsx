@@ -56,7 +56,9 @@ export function AccidentWatch({
               ? "Comprobando fuentes de accidentes…"
               : reports.length
                 ? `${reports.length} comunicados con mención de accidente · comprobar vigencia`
-                : "Sin menciones de accidente en los datos recuperados"}
+                : uncertain && !demo
+                  ? "No se ha podido verificar la cobertura de accidentes"
+                  : "Sin menciones de accidente en los datos recuperados"}
           </h2>
           <p className="mt-1 text-[10px] leading-5 text-zinc-600">
             {demo

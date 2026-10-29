@@ -9,9 +9,12 @@ export function accidentEvidence(
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
   const heading = normalized.split(/[.!?\n]/)[0];
+  const realEvent =
+    /\b(?:accidente|colision|descarrilamiento) real\b|\b(?:durante|tras) (?:un |el )?simulacro\b/;
   if (
     /\bsimulacro\b|\baniversario\b|\bconmemoracion\b/.test(heading) &&
-    !/\bno (?:es|era|se trata de) (?:un )?simulacro\b/.test(heading)
+    !/\bno (?:es|era|se trata de) (?:un )?simulacro\b/.test(heading) &&
+    !realEvent.test(normalized)
   )
     return "reference";
   const accident =
@@ -22,6 +25,7 @@ export function accidentEvidence(
     /\bsimulacro\b|\bejercicio\b|\baniversario\b|\bconmemoracion\b|\bprevencion de accidentes\b|\bsin accidentes\b|\bno (?:hay|hubo|se (?:han? |ha )?registrado) (?:ningun |ninguna |nuevos? )?(?:accidentes?|colisiones|descarril\w*)\b/;
   return clauses.some(
     (c) =>
+      realEvent.test(c) ||
       !reference.test(
         c.replace(/\bno (?:es|era|se trata de) (?:un )?simulacro\b/g, ""),
       ),
