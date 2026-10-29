@@ -34,6 +34,7 @@ export function AccidentWatch({
   );
   const uncertain =
     accidentCoverage(sources, failed, now / 1000) === "unverified";
+  const sourceError = sources.find((s) => s.id === "adif-traffic")?.error;
   return (
     <section
       aria-label="Vigilancia de accidentes publicados"
@@ -67,6 +68,11 @@ export function AccidentWatch({
                 ? "Cobertura de accidentes sin verificar: Adif no está disponible, indica mantenimiento o la consulta es antigua. No se puede confirmar el estado de la red."
                 : "Cobertura pública parcial. Ausencia de avisos no significa ausencia de accidentes. Sin partes internos de maquinistas."}
           </p>
+          {!demo && uncertain && sourceError && (
+            <p className="mt-1 text-[10px] leading-5 text-amber-800">
+              Detalle de Adif: {sourceError}
+            </p>
+          )}
           {reports.length > 0 && (
             <div className="mt-3 space-y-2">
               {reports.map((i) => (

@@ -30,6 +30,24 @@ test("failed accident polls retain the last bulletin with its original date and 
     assert.equal(failed.source.fetchedAt, 2000);
     assert.equal(failed.incidents[0].checkedAt, 2000);
     time += 61;
+    globalThis.fetch = async () =>
+      new Response("Access denied", { status: 403 });
+    const rejected = (await fetchAdif()).find(
+      (s) => s.source.id === "adif-traffic",
+    )!;
+    assert.match(rejected.source.error || "", /HTTP 403/);
+    assert.equal(rejected.source.status, "stale");
+    assert.equal(rejected.source.fetchedAt, 2000);
+    assert.equal(rejected.incidents[0].checkedAt, 2000);
+    time += 61;
+    globalThis.fetch = async () => new Response("<main>Unexpected page</main>");
+    const invalidHtml = (await fetchAdif()).find(
+      (s) => s.source.id === "adif-traffic",
+    )!;
+    assert.match(invalidHtml.source.error || "", /HTML/);
+    assert.equal(invalidHtml.incidents.length, 1);
+    assert.equal(invalidHtml.source.fetchedAt, 2000);
+    time += 61;
     globalThis.fetch = async () => new Response(empty);
     const recovered = (await fetchAdif()).find(
       (s) => s.source.id === "adif-traffic",

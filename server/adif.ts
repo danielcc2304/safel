@@ -2,6 +2,7 @@ import { load } from "cheerio";
 import type { Category, DataSource, Incident } from "../src/types.ts";
 import { parseMadridDate } from "./telemetry.ts";
 import { accidentEvidence } from "../src/lib/safety.ts";
+import { adifFailure } from "./adif-diagnostics.ts";
 
 const clean = (text: string) => text.replace(/\s+/g, " ").trim();
 export function incidentCategory(text: string): Category {
@@ -185,13 +186,16 @@ export async function fetchAdif() {
         scope:
           "Extracción de boletines públicos HTML de Adif, no una API ni un canal interno de maquinistas. Fecha de actualización de página cuando existe; no equivale a fecha de cada aviso.",
       };
+      let stage: "download" | "parse" = "download";
       try {
         const response = await fetch(def.url, {
           signal: AbortSignal.timeout(9000),
           headers: { Accept: "text/html" },
         });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const parsed = parseAdif(await response.text(), def.id, def.url, now);
+        const html = await response.text();
+        stage = "parse";
+        const parsed = parseAdif(html, def.id, def.url, now);
         const source: DataSource = {
           ...base,
           status:
@@ -217,7 +221,9 @@ export async function fetchAdif() {
         };
         cache.set(def.id, result);
         return result;
-      } catch {
+      } catch (error) {
+        const reason = adifFailure(error, stage);
+        console.warn(`[Safel] ${def.id}: ${reason}`);
         const result = {
           incidents: previous?.incidents || [],
           source: {
@@ -225,8 +231,7 @@ export async function fetchAdif() {
             status: previous?.incidents.length ? "stale" : "unavailable",
             timestamp: previous?.source.timestamp || null,
             fetchedAt: previous?.source.fetchedAt || null,
-            error:
-              "No se ha podido verificar el boletín público. Consulta Adif directamente; no se interpreta como ausencia de incidencias.",
+            error: `${reason} Consulta Adif directamente; no se interpreta como ausencia de incidencias.`,
           } as DataSource,
           attemptedAt: now,
         };
