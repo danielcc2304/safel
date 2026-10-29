@@ -87,6 +87,7 @@ export interface Incident {
   summaryOnly?: boolean;
 }
 export interface DataSource {
+  delivery?: "direct" | "snapshot";
   id: string;
   name: string;
   url: string;

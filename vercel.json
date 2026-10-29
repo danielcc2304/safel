@@ -3,6 +3,7 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "regions": ["cdg1"],
+  "git": { "deploymentEnabled": { "rail-data": false } },
   "functions": { "api/network.ts": { "maxDuration": 30 } },
   "headers": [
     {

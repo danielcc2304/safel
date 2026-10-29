@@ -1,0 +1,33 @@
+name: Recoger boletines de Adif
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "2-57/5 * * * *"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/rail-sources.yml"
+      - "scripts/collect-adif.ts"
+      - "server/adif*.ts"
+permissions:
+  contents: write
+concurrency:
+  group: rail-sources
+  cancel-in-progress: false
+jobs:
+  collect:
+    # Standard runners are free for public repositories. Never start paid private-repo polling.
+    if: github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - run: npm ci --ignore-scripts
+      - run: node --experimental-strip-types scripts/collect-adif.ts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -3,6 +3,7 @@ import type { Category, DataSource, Incident } from "../src/types.ts";
 import { parseMadridDate } from "./telemetry.ts";
 import { accidentEvidence } from "../src/lib/safety.ts";
 import { adifFailure } from "./adif-diagnostics.ts";
+import { fetchAdifSnapshot, snapshotRecord } from "./adif-snapshot.ts";
 
 const clean = (text: string) => text.replace(/\s+/g, " ").trim();
 export function incidentCategory(text: string): Category {
@@ -170,8 +171,9 @@ const cache = new Map<
   string,
   { incidents: Incident[]; source: DataSource; attemptedAt: number }
 >();
-export async function fetchAdif() {
+export async function fetchAdif({ allowSnapshot = true } = {}) {
   const now = Math.floor(Date.now() / 1000);
+  let snapshot: ReturnType<typeof fetchAdifSnapshot> | undefined;
   return Promise.all(
     definitions.map(async (def) => {
       const previous = cache.get(def.id);
@@ -203,6 +205,7 @@ export async function fetchAdif() {
         const parsed = parseAdif(html, def.id, def.url, now);
         const source: DataSource = {
           ...base,
+          delivery: "direct",
           status:
             parsed.partial ||
             (parsed.pageTimestamp != null &&
@@ -229,6 +232,20 @@ export async function fetchAdif() {
       } catch (error) {
         const reason = adifFailure(error, stage);
         console.warn(`[Safel] ${def.id}: ${reason}`);
+        if (allowSnapshot) {
+          snapshot ??= fetchAdifSnapshot();
+          const saved = await snapshot;
+          const fallback = saved ? snapshotRecord(saved, def.id, now) : null;
+          if (
+            fallback &&
+            (fallback.source.fetchedAt || 0) >=
+              (previous?.source.fetchedAt || 0)
+          ) {
+            const result = { ...fallback, attemptedAt: now };
+            cache.set(def.id, result);
+            return result;
+          }
+        }
         const result = {
           incidents: previous?.incidents || [],
           source: {
