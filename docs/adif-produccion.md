@@ -36,7 +36,11 @@ El recolector `.github/workflows/rail-sources.yml` consulta las dos páginas ofi
 
 Vercel intenta consultar Adif directamente. Si falla, descarga esa copia pública, comprueba versión, estructura, fuentes, enlaces y fechas, y la sirve indicando `delivery: snapshot`. No hay claves nuevas, proxies públicos ni servicios contratados. El token automático de Actions solo se usa dentro del runner para escribir la rama; no se publica ni se envía a Adif. El workflow se omite si el repositorio pasa a privado, para no iniciar un consumo de minutos de pago.
 
+La lectura de respaldo prueba GitHub Raw y, si no puede validarse la respuesta, la API pública de contenidos de GitHub con formato raw. Cada ruta tiene seis segundos de plazo y no recibe credenciales. Los fallos se distinguen como HTTP, conexión, lectura o validación en los logs y en el diagnóstico de fuentes, sin revelar el contenido recibido. Esta redundancia se añadió tras detectar una lectura fallida desde una instancia nueva de Vercel.
+
 Comprobación real del 29/10/2026: la [primera ejecución](https://github.com/danielcc2304/safel/actions/runs/40950363928) finalizó correctamente. La copia publicó tres boletines de tráfico y trece avisos de obras. `/api/network`, revisión `0d530da6b031`, los recuperó desde París con `delivery: snapshot`, mientras la consulta directa continuaba bloqueada. Tráfico conservó `stale` porque Adif indica mantenimiento o extracción parcial; obras quedó `ok`. No se usaron datos de localhost para crear la copia inicial.
+
+La [segunda ejecución](https://github.com/danielcc2304/safel/actions/runs/40952033156) volvió a descargar y publicar correctamente. La revisión de producción `7644a8eca7f3` recuperó tres boletines de tráfico, trece de obras y trece incidencias del RSS de Rodalies. Se conservaron los estados parciales de Adif y las fechas originales; Rodalies respondió con canal reciente. Estas verificaciones de Actions fueron disparadas por cambios de código: no demuestran puntualidad futura de la programación cron.
 
 ### Fechas, caducidad y recuperación
 
