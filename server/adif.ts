@@ -3,7 +3,7 @@ import type { Category, DataSource, Incident } from "../src/types.ts";
 import { parseMadridDate } from "./telemetry.ts";
 import { accidentEvidence } from "../src/lib/safety.ts";
 import { adifFailure } from "./adif-diagnostics.ts";
-import { fetchAdifSnapshot, snapshotRecord } from "./adif-snapshot.ts";
+import { readAdifSnapshot, snapshotRecord } from "./adif-snapshot.ts";
 
 const clean = (text: string) => text.replace(/\s+/g, " ").trim();
 export function incidentCategory(text: string): Category {
@@ -173,7 +173,7 @@ const cache = new Map<
 >();
 export async function fetchAdif({ allowSnapshot = true } = {}) {
   const now = Math.floor(Date.now() / 1000);
-  let snapshot: ReturnType<typeof fetchAdifSnapshot> | undefined;
+  let snapshot: ReturnType<typeof readAdifSnapshot> | undefined;
   return Promise.all(
     definitions.map(async (def) => {
       const previous = cache.get(def.id);
@@ -232,9 +232,12 @@ export async function fetchAdif({ allowSnapshot = true } = {}) {
       } catch (error) {
         const reason = adifFailure(error, stage);
         console.warn(`[Safel] ${def.id}: ${reason}`);
+        let backupError = "";
         if (allowSnapshot) {
-          snapshot ??= fetchAdifSnapshot();
-          const saved = await snapshot;
+          snapshot ??= readAdifSnapshot();
+          const read = await snapshot;
+          const saved = read.data;
+          backupError = read.error || "";
           const fallback = saved ? snapshotRecord(saved, def.id, now) : null;
           if (
             fallback &&
@@ -253,7 +256,7 @@ export async function fetchAdif({ allowSnapshot = true } = {}) {
             status: previous?.incidents.length ? "stale" : "unavailable",
             timestamp: previous?.source.timestamp || null,
             fetchedAt: previous?.source.fetchedAt || null,
-            error: `${reason} Consulta Adif directamente; no se interpreta como ausencia de incidencias.`,
+            error: `${reason} ${backupError} Consulta Adif directamente; no se interpreta como ausencia de incidencias.`,
           } as DataSource,
           attemptedAt: now,
         };

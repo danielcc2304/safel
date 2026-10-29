@@ -182,7 +182,7 @@ export function IncidentPanel({
         <ShieldCheck size={11} />
         {demo
           ? "Avisos ficticios · modo demostración"
-          : "Adif + Renfe · avisos públicos, cobertura parcial"}
+          : "Fuentes oficiales · avisos públicos, cobertura parcial"}
       </div>
     </section>
   );

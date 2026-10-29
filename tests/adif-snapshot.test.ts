@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { parseAdifSnapshot, snapshotRecord } from "../server/adif-snapshot.ts";
+import {
+  parseAdifSnapshot,
+  readAdifSnapshot,
+  snapshotRecord,
+} from "../server/adif-snapshot.ts";
 
 const fixture = () => ({
   version: 1,
@@ -105,4 +109,36 @@ test("snapshot strips arbitrary payload fields and never promotes a partial orig
   assert.equal(record.source.status, "stale");
   assert.equal(record.incidents[0].lat, undefined);
   assert.equal(record.incidents[0].end, undefined);
+});
+
+test("public copy uses GitHub API when Raw fails and reports bounded diagnostics when both fail", async () => {
+  const originalFetch = globalThis.fetch,
+    originalNow = Date.now;
+  const calls: string[] = [];
+  try {
+    Date.now = () => 2100000;
+    globalThis.fetch = async (url, init) => {
+      calls.push(String(url));
+      assert.equal(new Headers(init?.headers).has("Authorization"), false);
+      return String(url).includes("raw.githubusercontent.com")
+        ? new Response("Denied", { status: 403 })
+        : Response.json(fixture());
+    };
+    const recovered = await readAdifSnapshot();
+    assert.equal(recovered.data?.records[0].source.fetchedAt, 1900);
+    assert.equal(calls.length, 2);
+    assert.match(
+      calls[1],
+      /^https:\/\/api.github.com\/repos\/danielcc2304\/safel\/contents/,
+    );
+    globalThis.fetch = async () =>
+      new Response("<html>Private upstream trace</html>");
+    const failed = await readAdifSnapshot();
+    assert.equal(failed.data, null);
+    assert.match(failed.error || "", /validación fallida/);
+    assert.doesNotMatch(failed.error || "", /Private upstream trace|<html>/);
+  } finally {
+    globalThis.fetch = originalFetch;
+    Date.now = originalNow;
+  }
 });

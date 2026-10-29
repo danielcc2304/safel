@@ -174,17 +174,51 @@ export function snapshotRecord(
   };
 }
 
-export async function fetchAdifSnapshot(): Promise<AdifSnapshot | null> {
-  try {
-    const response = await fetch(ADIF_SNAPSHOT_URL, {
-      signal: AbortSignal.timeout(4000),
-      headers: { Accept: "application/json" },
-    });
-    if (!response.ok) return null;
-    const body = await response.text();
-    if (body.length > 2_000_000) return null;
-    return parseAdifSnapshot(JSON.parse(body));
-  } catch {
-    return null;
+export async function readAdifSnapshot(): Promise<{
+  data: AdifSnapshot | null;
+  error?: string;
+}> {
+  const failures: string[] = [];
+  for (const [label, url, accept] of [
+    ["GitHub Raw", ADIF_SNAPSHOT_URL, "application/json"],
+    [
+      "GitHub API",
+      "https://api.github.com/repos/danielcc2304/safel/contents/adif.json?ref=rail-data",
+      "application/vnd.github.raw+json",
+    ],
+  ]) {
+    let stage = "conexión";
+    try {
+      const response = await fetch(url, {
+        signal: AbortSignal.timeout(6000),
+        headers: {
+          Accept: accept,
+          "User-Agent": "Safel/1.0 (public rail bulletin reader)",
+        },
+      });
+      if (!response.ok) {
+        failures.push(`${label}: HTTP ${response.status}`);
+        continue;
+      }
+      stage = "lectura";
+      const body = await response.text();
+      if (body.length > 2_000_000) {
+        failures.push(`${label}: tamaño no admitido`);
+        continue;
+      }
+      stage = "validación";
+      return { data: parseAdifSnapshot(JSON.parse(body)) };
+    } catch (error) {
+      failures.push(
+        `${label}: ${error instanceof Error && error.name === "TimeoutError" ? "tiempo de espera agotado" : stage + " fallida"}`,
+      );
+    }
   }
+  const error = `Copia de respaldo no disponible (${failures.join("; ")}).`;
+  console.warn(`[Safel] adif-snapshot: ${error}`);
+  return { data: null, error };
+}
+
+export async function fetchAdifSnapshot(): Promise<AdifSnapshot | null> {
+  return (await readAdifSnapshot()).data;
 }
