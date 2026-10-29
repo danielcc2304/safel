@@ -9,14 +9,25 @@ export function accidentEvidence(
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
   const heading = normalized.split(/[.!?\n]/)[0];
-  if (/\bsimulacro\b|\baniversario\b|\bconmemoracion\b/.test(heading) && !/\bno (?:es|era|se trata de) (?:un )?simulacro\b/.test(heading)) return 'reference';
+  if (
+    /\bsimulacro\b|\baniversario\b|\bconmemoracion\b/.test(heading) &&
+    !/\bno (?:es|era|se trata de) (?:un )?simulacro\b/.test(heading)
+  )
+    return "reference";
   const accident =
-    /\baccidentes?\b|\bdescarril\w*|\bcolisi(?:on|ones)\b|\bchoque\b|\balcance entre\b/;
+    /\baccidentes?\b|\bdescarril\w*|\bcolisi(?:on|ones)\b|\bchoque (?:entre|con|de|frontal|lateral)\b|\balcance (?:entre|de (?:un |dos )?tren|ferroviario)|\barrollamiento\b|\batropello\b|\bsalida de (?:la )?via\b|\bsiniestro ferroviario\b/;
   const clauses = normalized.split(/[.!?\n]+/).filter((c) => accident.test(c));
   if (!clauses.length) return "none";
   const reference =
     /\bsimulacro\b|\bejercicio\b|\baniversario\b|\bconmemoracion\b|\bprevencion de accidentes\b|\bsin accidentes\b|\bno (?:hay|hubo|se (?:han? |ha )?registrado) (?:ningun |ninguna |nuevos? )?(?:accidentes?|colisiones|descarril\w*)\b/;
-  return clauses.some((c) => !reference.test(c)) ? "reported" : "reference";
+  return clauses.some(
+    (c) =>
+      !reference.test(
+        c.replace(/\bno (?:es|era|se trata de) (?:un )?simulacro\b/g, ""),
+      ),
+  )
+    ? "reported"
+    : "reference";
 }
 export function prioritizeIncidents(incidents: Incident[]) {
   const rank = (i: Incident) =>

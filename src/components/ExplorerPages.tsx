@@ -597,8 +597,10 @@ export function NotificationsModal({
   return (
     <Modal title="Centro de avisos" onClose={onClose}>
       <p className="mb-5 text-xs leading-6 text-muted">
-        Cambios detectados en tus {savedCount} trenes guardados durante esta
-        sesión. Safel debe permanecer abierto para recibir actualizaciones.
+        Comunicados sobre accidentes nuevos o actualizados y cambios de demora
+        de tus {savedCount} trenes guardados durante esta sesión. Safel debe
+        permanecer abierto y actualizándose. Una nueva detección no implica que
+        el accidente haya ocurrido ahora.
       </p>
       {notices.length ? (
         notices.map((n) => (

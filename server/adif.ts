@@ -144,7 +144,11 @@ export function parseAdif(
     });
   });
   return {
-    incidents: [...new Map(incidents.map(i => [`${clean(i.title)}:${clean(i.description)}`, i])).values()],
+    incidents: [
+      ...new Map(
+        incidents.map((i) => [`${clean(i.title)}:${clean(i.description)}`, i]),
+      ).values(),
+    ],
     pageTimestamp,
     partial: maintenance || (!nodes.length && !knownEmpty),
   };
