@@ -7,6 +7,7 @@ import {
 } from "./visor.ts";
 import { fetchAdif, incidentCategory } from "./adif.ts";
 import { fetchRailNews, deduplicateNews } from "./rail-news.ts";
+import { fetchRodalies } from "./rodalies.ts";
 import { MotionHistory } from "./telemetry.ts";
 import { prioritizeIncidents } from "../src/lib/safety.ts";
 import type {
@@ -464,7 +465,7 @@ export async function getNetwork(): Promise<NetworkData> {
     return resultCache;
   if (inFlight) return inFlight;
   inFlight = (async () => {
-    const [feeds, originalCatalog, fleet, auxiliary, adif, news] =
+    const [feeds, originalCatalog, fleet, auxiliary, adif, news, rodalies] =
       await Promise.all([
         Promise.all(feedDefinitions.map(fetchFeed)),
         loadSchedule(),
@@ -472,6 +473,7 @@ export async function getNetwork(): Promise<NetworkData> {
         fetchVisorAuxiliary(),
         fetchAdif(),
         fetchRailNews(),
+        fetchRodalies(),
       ]);
     const extraStops = stationsFromVisor(
       auxiliary.find((a) => a.source.id === "visor-stations")?.data || null,
@@ -558,6 +560,7 @@ export async function getNetwork(): Promise<NetworkData> {
       ...auxiliary.map((a) => a.source),
       ...adif.map((a) => a.source),
       ...news.map((a) => a.source),
+      rodalies.source,
     );
     const unlocatedCerc: UnlocatedTrain[] = (
       get("positions-cerc")?.entity || []
@@ -588,6 +591,7 @@ export async function getNetwork(): Promise<NetworkData> {
       ),
       incidents: prioritizeIncidents([
         ...adif.flatMap((a) => a.incidents),
+        ...rodalies.incidents,
         ...(alerts ? normalizeAlerts(alerts, catalog) : []),
       ]),
       sources,

@@ -34,7 +34,7 @@ export function AccidentWatch({
   );
   const uncertain =
     accidentCoverage(sources, failed, now / 1000) === "unverified";
-  const sourceError = sources.find((s) => s.id === "adif-traffic")?.error;
+  const adif = sources.find((s) => s.id === "adif-traffic");
   return (
     <section
       aria-label="Vigilancia de accidentes publicados"
@@ -58,19 +58,21 @@ export function AccidentWatch({
               : reports.length
                 ? `${reports.length} comunicados con mención de accidente · comprobar vigencia`
                 : uncertain && !demo
-                  ? "No se ha podido verificar la cobertura de accidentes"
+                  ? "Vigilancia de accidentes · cobertura limitada"
                   : "Sin menciones de accidente en los datos recuperados"}
           </h2>
           <p className="mt-1 text-[10px] leading-5 text-zinc-600">
             {demo
               ? "Datos ficticios. Cambia a Fuentes públicas para consultar comunicados oficiales."
               : uncertain
-                ? "Cobertura de accidentes sin verificar: Adif no está disponible, indica mantenimiento o la consulta es antigua. No se puede confirmar el estado de la red."
+                ? "Se consultan avisos oficiales y noticias nacionales. Las fuentes pueden estar incompletas o sin actualizar: no permiten confirmar la ausencia de accidentes en toda la red. Sin acceso a partes internos de maquinistas."
                 : "Cobertura pública parcial. Ausencia de avisos no significa ausencia de accidentes. Sin partes internos de maquinistas."}
           </p>
-          {!demo && uncertain && sourceError && (
+          {!demo && adif?.delivery === "snapshot" && (
             <p className="mt-1 text-[10px] leading-5 text-amber-800">
-              Detalle de Adif: {sourceError}
+              Adif · copia de respaldo descargada{" "}
+              {formatTime(adif.fetchedAt, true)}. Comprueba la vigencia de cada
+              comunicado.
             </p>
           )}
           {reports.length > 0 && (

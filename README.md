@@ -107,10 +107,12 @@ Consultar [.env.example](.env.example) y la [guía de activación](docs/publicid
 1. Subir el proyecto al repositorio sin `node_modules` ni `dist`.
 2. Importar el repositorio en Vercel, con Node.js 24 y preset Vite.
 3. `vercel.json` configura `npm run build`, salida `dist` y `/api/network`, con 30 segundos de duración máxima.
-4. No hacen falta secretos. El servidor necesita HTTPS hacia `gtfsrt.renfe.com`, `ssl.renfe.com`, `tiempo-real.largorecorrido.renfe.com` y `www.adif.es`.
+4. No hacen falta secretos nuevos. El servidor consulta Renfe, Adif, el RSS de Generalitat, los canales de noticias y la copia pública de Safel en `raw.githubusercontent.com`. El recolector usa únicamente el `GITHUB_TOKEN` automático de Actions.
 5. Verificar `/api/network` y Fuentes y cobertura tras desplegar. Revisar las condiciones de los proveedores de mapas para el público/volumen previstos.
 
 No desplegar solamente `dist` en un alojamiento estático si se desean datos públicos: la función API resuelve CORS, descarga catálogos y normaliza las fuentes. Los enlaces `?tren=03113#map` abren seguimiento por número; `?modo=demo&tren=03113#map` preserva la identificación de demostración.
+
+Si Adif bloquea Vercel, el recolector de GitHub Actions publica boletines validados en la rama `rail-data` cada cinco minutos aproximadamente. La API los usa como respaldo con sus fechas originales; actualizar esa rama no despliega la web. No requiere proxies ni servicios de pago en este repositorio público. La programación puede retrasarse y no garantiza detectar todos los accidentes. Operación, caducidad y recuperación: [docs/adif-produccion.md](docs/adif-produccion.md).
 
 ## Organización
 

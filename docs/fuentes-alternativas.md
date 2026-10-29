@@ -1,6 +1,6 @@
 # Fuentes oficiales alternativas a Adif
 
-Comprobación realizada el 29/10/2026 mediante búsqueda en catálogos oficiales y peticiones HTTPS desde el entorno local. No se ha comprobado el acceso desde las funciones de Vercel ni se han integrado estas fuentes en la aplicación.
+Comprobación inicial realizada el 29/10/2026 mediante búsqueda en catálogos oficiales y peticiones HTTPS. Actualización: el RSS oficial de Rodalies ya está integrado como `rodalies-alerts`; 112 Castilla-La Mancha y RadarDeTrenes permanecen como candidatos. Adif dispone de un recolector independiente y copia persistente; ver [diagnóstico y operación](adif-produccion.md).
 
 ## 112 Castilla-La Mancha: candidato para comunicados de accidentes
 

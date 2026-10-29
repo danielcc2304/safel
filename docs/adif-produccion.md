@@ -29,3 +29,21 @@ Adif sirve HTML, por lo que no corresponde ejecutar `JSON.parse` sobre `contents
 Se configura una única región de funciones, París (`cdg1`), compatible con Hobby. Madrid (`mad1`) no aparece en la lista oficial de regiones de cómputo. `X-Safel-Region` permite comprobar la región efectiva del backend, junto con `X-Safel-Revision`; la región de la CDN no demuestra dónde se ejecutó la función. El cambio no garantiza acceso a Adif. No se contrata un proxy ni se añade una dependencia de pago.
 
 Referencias: [regiones de Vercel](https://vercel.com/docs/regions), [configuración y límites por plan](https://vercel.com/docs/functions/configuring-functions/region), [AllOrigins](https://github.com/gnuns/allOrigins), [CORS Anywhere](https://github.com/Rob--W/cors-anywhere).
+
+## Solución desplegada: recolección independiente y copia persistente
+
+El recolector `.github/workflows/rail-sources.yml` consulta las dos páginas oficiales desde un runner estándar de GitHub Actions. Se inicia al cambiar el recolector en main, manualmente y con una programación cada cinco minutos. Valida y publica únicamente los datos normalizados en `rail-data/adif.json`. La rama de datos desactiva los despliegues de Vercel: actualizar boletines no reconstruye la web.
+
+Vercel intenta consultar Adif directamente. Si falla, descarga esa copia pública, comprueba versión, estructura, fuentes, enlaces y fechas, y la sirve indicando `delivery: snapshot`. No hay claves nuevas, proxies públicos ni servicios contratados. El token automático de Actions solo se usa dentro del runner para escribir la rama; no se publica ni se envía a Adif. El workflow se omite si el repositorio pasa a privado, para no iniciar un consumo de minutos de pago.
+
+Comprobación real del 29/10/2026: la [primera ejecución](https://github.com/danielcc2304/safel/actions/runs/40950363928) finalizó correctamente. La copia publicó tres boletines de tráfico y trece avisos de obras. `/api/network`, revisión `0d530da6b031`, los recuperó desde París con `delivery: snapshot`, mientras la consulta directa continuaba bloqueada. Tráfico conservó `stale` porque Adif indica mantenimiento o extracción parcial; obras quedó `ok`. No se usaron datos de localhost para crear la copia inicial.
+
+### Fechas, caducidad y recuperación
+
+- La copia conserva `fetchedAt` y `checkedAt` originales, y separa la fecha de página de la fecha de cada comunicado. Generar otra copia tras un fallo no rejuvenece los datos anteriores.
+- Una copia con más de quince minutos desde la última descarga se marca antigua. Se rechazan copias generadas hace más de veinticuatro horas, documentos incompletos, fechas futuras y enlaces ajenos a Adif. No se incorporan coordenadas supuestas.
+- Una respuesta vacía válida sustituye los avisos anteriores. Un error HTTP, un HTML desconocido o una copia inválida no se convierten en «cero accidentes».
+- Un fallo del recolector conserva los últimos boletines válidos y termina la ejecución como fallida, visible en GitHub Actions. La API sigue mostrando la antigüedad de esos datos.
+- La programación de Actions puede retrasarse o perder ejecuciones. En repositorios públicos se desactiva tras sesenta días sin actividad; puede reactivarse desde Actions. Esta arquitectura no es un canal instantáneo de emergencias ni tiene una garantía de detección exhaustiva. Véase la [documentación de GitHub](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule).
+
+El RSS oficial de Rodalies se consulta por separado como `rodalies-alerts`. Amplía las incidencias operativas de Cataluña y mantiene su ámbito y fechas. RTVE y GDELT siguen siendo canales de noticias nacionales diferenciados de los boletines operativos. Ninguno certifica la ausencia de accidentes en toda España.

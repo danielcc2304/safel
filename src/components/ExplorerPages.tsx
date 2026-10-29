@@ -58,6 +58,9 @@ export function SourcesPage({ data }: { data: NetworkData | null }) {
                   <span>Cadencia / consulta: {s.cadence}</span>
                   <span>Fecha del feed: {formatTime(s.timestamp, true)}</span>
                   <span>Consulta: {formatTime(s.fetchedAt, true)}</span>
+                  {s.delivery === "snapshot" && (
+                    <span>Entrega: copia de respaldo de Safel</span>
+                  )}
                 </div>
                 {s.error && (
                   <p className="mt-2 text-xs text-amber-700">{s.error}</p>

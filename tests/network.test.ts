@@ -195,7 +195,7 @@ test("an upstream outage returns explicit unavailable sources and never fabricat
     assert.deepEqual(data.trains, []);
     assert.deepEqual(data.incidents, []);
     assert.deepEqual(data.railNews, []);
-    assert.equal(data.sources.length, 13);
+    assert.equal(data.sources.length, 14);
     assert.ok(data.sources.every((s) => s.status === "unavailable"));
     assert.ok(data.sources.every((s) => s.timestamp === null));
   } finally {
