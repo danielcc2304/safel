@@ -10,6 +10,10 @@ export default async function handler(
     "public, s-maxage=20, stale-while-revalidate=30",
   );
   res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader(
+    "X-Safel-Revision",
+    process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 12) || "local",
+  );
   if (req.method !== "GET") {
     res.statusCode = 405;
     res.setHeader("Allow", "GET");

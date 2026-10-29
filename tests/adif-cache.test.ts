@@ -10,10 +10,15 @@ test("failed accident polls retain the last bulletin with its original date and 
     '<div class="adif-aviso-wrapper"><h1 class="adif-titulo-aviso">Accidente en la red</h1><div class="adif-aviso-contenido"><p>Comunicado de accidente.</p></div></div>';
   try {
     Date.now = () => time * 1000;
-    globalThis.fetch = async (input) =>
-      new Response(
+    globalThis.fetch = async (input, init) => {
+      const headers = new Headers(init?.headers);
+      assert.match(headers.get("User-Agent") || "", /Mozilla\/5\.0/);
+      assert.match(headers.get("Accept") || "", /text\/html/);
+      assert.equal(headers.get("Accept-Language"), "es-ES,es;q=0.9");
+      return new Response(
         String(input).includes("estado-de-la-red") ? banner + empty : empty,
       );
+    };
     const first = (await fetchAdif()).find(
       (s) => s.source.id === "adif-traffic",
     )!;

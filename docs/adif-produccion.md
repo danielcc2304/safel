@@ -12,3 +12,5 @@ Tras desplegar el diagnóstico, el campo `sources[].error`, el bloque de acciden
 - HTML no interpretable: contrastar la respuesta real y adaptar la extracción con pruebas; no convertirla en cero incidencias.
 
 No se ha alterado la política de cobertura ni insertado una copia de avisos de localhost en producción. Una caché persistente podría conservar la última descarga válida entre instancias, pero no arreglaría por sí sola un bloqueo de acceso ni haría actuales los avisos guardados.
+
+Se prepara una prueba con `User-Agent` de navegador, `Accept` de HTML y `Accept-Language: es-ES,es;q=0.9` en ambas consultas a Adif. No cambia la interfaz ni los estados de error. La cabecera `X-Safel-Revision` permite contrastar el commit del backend desplegado antes de interpretar el resultado: una respuesta de una revisión anterior no valida la prueba. El resultado solo se confirma consultando desde Vercel; el éxito local no basta.
