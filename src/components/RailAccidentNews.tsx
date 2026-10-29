@@ -63,8 +63,8 @@ export function RailAccidentNews({
               {loading && !providers.length
                 ? "Consultando publicaciones…"
                 : providers.some((s) => s.status === "ok")
-                  ? "No se han recuperado titulares que coincidan con los filtros. Esto no confirma ausencia de accidentes."
-                  : "Las fuentes de noticias no están disponibles. No se puede comprobar si hay publicaciones nuevas."}
+                  ? "No hay publicaciones recientes para mostrar."
+                  : "Noticias temporalmente no disponibles."}
             </p>
           )}
           {items.length > 6 && (
@@ -82,7 +82,6 @@ export function RailAccidentNews({
               <p
                 key={s.id}
                 className="text-[9px] leading-5 text-muted"
-                title={s.error}
               >
                 {s.id === "rail-news-gdelt" ? "GDELT" : "RTVE"} ·{" "}
                 {s.status === "ok"
@@ -94,11 +93,6 @@ export function RailAccidentNews({
                 {s.fetchedAt
                   ? `Consulta ${formatTime(s.fetchedAt, true)}`
                   : "Sin descarga válida"}
-                {s.error && (
-                  <span className="block max-w-xl text-amber-800">
-                    {s.error}
-                  </span>
-                )}
               </p>
             ))}
           </div>
