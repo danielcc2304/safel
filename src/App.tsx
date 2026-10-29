@@ -32,6 +32,8 @@ import {
 import { TrainTable } from "./components/TrainTable";
 import { TrainDetail } from "./components/TrainDetail";
 import { BrandMark } from "./components/BrandMark";
+import { AccidentWatch } from "./components/AccidentWatch";
+import { accidentEvidence } from './lib/safety';
 import { UnlocatedModal } from "./components/TrainTelemetry";
 import {
   HelpModal,
@@ -120,6 +122,7 @@ function App() {
   const [now, setNow] = useState(new Date());
   const [notices, setNotices] = useState<UpdateNotice[]>([]);
   const lastDelays = useRef(new Map<string, number | null>());
+  const seenAccidents = useRef<Map<string, string> | null>(null);
   const sharedApplied = useRef(false);
   const saved = savedModes[mode];
   const details = pageDetails[page];
@@ -180,6 +183,19 @@ function App() {
   useEffect(() => {
     document.title = `Safel · ${details.breadcrumb}`;
   }, [details]);
+  useEffect(() => {
+    if (mode === 'demo') { seenAccidents.current = null; return; }
+    if (!data) return;
+    const reports = data.incidents.filter(i => accidentEvidence(`${i.title}. ${i.description}`) === 'reported');
+    if (!seenAccidents.current) { seenAccidents.current = new Map(reports.map(i => [i.id, `${i.title}\n${i.description}`])); return; }
+    const updates: UpdateNotice[] = [];
+    for (const report of reports) {
+      const text = `${report.title}\n${report.description}`;
+      if (seenAccidents.current.get(report.id) !== text) updates.push({ id: `accident-${report.id}-${Date.now()}`, text: `Comunicado sobre accidente detectado o actualizado: ${report.title}. Confirma fecha, vigencia y ámbito en la fuente oficial; no implica un accidente ocurrido ahora.`, at: Math.floor(Date.now()/1000) });
+      seenAccidents.current.set(report.id, text);
+    }
+    if (updates.length) { setNotices(old => [...updates, ...old].slice(0,30)); setToast('Hay un comunicado sobre accidentes nuevo o actualizado. Revisa los avisos prioritarios.'); }
+  }, [data, mode]);
   useEffect(() => {
     if (sharedApplied.current || loading || !data) return;
     sharedApplied.current = true;
@@ -468,6 +484,14 @@ function App() {
               </button>
             </div>
           ) : null}
+          <AccidentWatch
+            incidents={incidents}
+            sources={sources}
+            loading={loading && !data}
+            failed={!!error}
+            demo={mode === "demo"}
+            onSelect={setIncident}
+          />
           {page === "map" && (
             <div className="animate-enter space-y-5">
               <Stats data={data} loading={loading} />

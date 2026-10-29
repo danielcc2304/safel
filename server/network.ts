@@ -7,7 +7,7 @@ import {
 } from "./visor.ts";
 import { fetchAdif, incidentCategory } from "./adif.ts";
 import { MotionHistory } from "./telemetry.ts";
-import { prioritizeIncidents } from '../src/lib/safety.ts';
+import { prioritizeIncidents } from "../src/lib/safety.ts";
 import type {
   Category,
   DataSource,

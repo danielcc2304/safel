@@ -21,10 +21,16 @@ export function useNetwork(autoRefresh: boolean) {
     controller.current = current;
     setLoading(true);
     try {
-      const response = await fetch("/api/network", { signal: current.signal });
+      const response = await fetch("/api/network", {
+        signal: AbortSignal.any([current.signal, AbortSignal.timeout(15000)]),
+      });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const next: NetworkData = await response.json();
-      if (!Array.isArray(next.trains) || !Array.isArray(next.sources))
+      if (
+        !Array.isArray(next.trains) ||
+        !Array.isArray(next.sources) ||
+        !Array.isArray(next.incidents)
+      )
         throw new Error("Respuesta inválida");
       setData(next);
       setError(
@@ -37,15 +43,26 @@ export function useNetwork(autoRefresh: boolean) {
       setError(
         "No se ha podido conectar con las fuentes públicas. Puedes reintentar o explorar la demostración.",
       );
-      setData(
-        (previous) =>
-          previous ? { ...previous, sources: previous.sources.map(s => ({ ...s, status: s.fetchedAt ? 'stale' as const : 'unavailable' as const, error: 'La consulta de Safel ha fallado. Esta es la última respuesta conservada.' })) } : {
-            trains: [],
-            incidents: [],
-            sources: [],
-            fetchedAt: Math.floor(Date.now() / 1000),
-            demo: false,
-          },
+      setData((previous) =>
+        previous
+          ? {
+              ...previous,
+              sources: previous.sources.map((s) => ({
+                ...s,
+                status: s.fetchedAt
+                  ? ("stale" as const)
+                  : ("unavailable" as const),
+                error:
+                  "La consulta de Safel ha fallado. Esta es la última respuesta conservada.",
+              })),
+            }
+          : {
+              trains: [],
+              incidents: [],
+              sources: [],
+              fetchedAt: Math.floor(Date.now() / 1000),
+              demo: false,
+            },
       );
     } finally {
       if (!current.signal.aborted) setLoading(false);

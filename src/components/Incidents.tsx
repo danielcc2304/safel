@@ -22,6 +22,7 @@ import {
   severityLabels,
 } from "../lib/utils";
 import { Badge, Button, EmptyState, ExternalLink, Modal } from "./ui";
+import { prioritizeIncidents } from "../lib/safety";
 
 const categoryIcons = {
   Infraestructura: TriangleAlert,
@@ -70,7 +71,7 @@ export function IncidentPanel({
   onViewAll: () => void;
 }) {
   const [tab, setTab] = useState("Todas");
-  const filtered = incidents.filter(
+  const filtered = prioritizeIncidents(incidents).filter(
     (i) =>
       tab === "Todas" ||
       (tab === "Adif"
@@ -197,7 +198,7 @@ export function IncidentList({
   const [category, setCategory] = useState("Todas");
   const [severity, setSeverity] = useState("all");
   const [provider, setProvider] = useState("all");
-  const filtered = incidents.filter(
+  const filtered = prioritizeIncidents(incidents).filter(
     (i) =>
       (provider === "all" ||
         (provider === "adif"
