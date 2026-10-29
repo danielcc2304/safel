@@ -39,7 +39,7 @@ export function useNetwork(autoRefresh: boolean) {
       );
       setData(
         (previous) =>
-          previous || {
+          previous ? { ...previous, sources: previous.sources.map(s => ({ ...s, status: s.fetchedAt ? 'stale' as const : 'unavailable' as const, error: 'La consulta de Safel ha fallado. Esta es la última respuesta conservada.' })) } : {
             trains: [],
             incidents: [],
             sources: [],

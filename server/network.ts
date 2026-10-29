@@ -7,6 +7,7 @@ import {
 } from "./visor.ts";
 import { fetchAdif, incidentCategory } from "./adif.ts";
 import { MotionHistory } from "./telemetry.ts";
+import { prioritizeIncidents } from '../src/lib/safety.ts';
 import type {
   Category,
   DataSource,
@@ -580,10 +581,10 @@ export async function getNetwork(): Promise<NetworkData> {
       stations: [...(catalog?.stops.values() || [])].filter(
         (s) => Number.isFinite(s.lat) && Number.isFinite(s.lon),
       ),
-      incidents: [
+      incidents: prioritizeIncidents([
         ...adif.flatMap((a) => a.incidents),
         ...(alerts ? normalizeAlerts(alerts, catalog) : []),
-      ],
+      ]),
       sources,
       unlocatedTrains: [
         ...new Map(

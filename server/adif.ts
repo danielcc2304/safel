@@ -1,10 +1,11 @@
 import { load } from "cheerio";
 import type { Category, DataSource, Incident } from "../src/types.ts";
 import { parseMadridDate } from "./telemetry.ts";
+import { accidentEvidence } from '../src/lib/safety.ts';
 
 const clean = (text: string) => text.replace(/\s+/g, " ").trim();
 export function incidentCategory(text: string): Category {
-  return /accidente|alcance entre.*trenes|descarril/i.test(text)
+  return accidentEvidence(text) !== 'none'
     ? "Accidente"
     : /catenaria|tensión|electrific|pantógrafo/i.test(text)
       ? "Catenaria"
@@ -33,7 +34,15 @@ export function parseAdif(
   const knownEmpty = /En este momento no hay incidencias relevantes/i.test(
     $("#main-content,main").text(),
   );
-  if (!nodes.length && !knownEmpty)
+  const maintenance = /(?:secci[oó]n|p[aá]gina).{0,65}(?:mantenimiento|no (?:est[aá] )?disponible)/i.test(clean($('#main-content,main').text()));
+  if (traffic) $('.adif-aviso-wrapper').each((index, element) => {
+    const node = $(element);
+    const title = clean(node.find('.adif-titulo-aviso').text());
+    const description = node.find('.adif-aviso-contenido').find('p,li').map((_, p) => clean($(p).text())).get().join('\n\n');
+    if (!title || !description || accidentEvidence(`${title}. ${description}`) !== 'reported') return;
+    incidents.push({ id: `${sourceId}-featured-${node.find('[data-analytics-asset-id]').first().attr('data-analytics-asset-id') || encodeURIComponent(title).slice(0,160) || index}`, title, description, category: 'Accidente', severity: 'info', location: 'Ámbito descrito en el comunicado de Adif', start: null, checkedAt, sourceId, sourceName: 'Adif', url, routeIds: [], stopIds: [], locationNote: 'Aviso destacado de la web oficial. Sin fecha individual ni coordenadas verificadas: consultar vigencia y ámbito en el original.' });
+  });
+  if ((!nodes.length && !knownEmpty && !incidents.length) || (!nodes.length && maintenance && !incidents.length))
     throw new Error(
       "La estructura del boletín de Adif ha cambiado o no se ha podido verificar",
     );
@@ -101,7 +110,7 @@ export function parseAdif(
         "El boletín no publica coordenadas verificadas. No se sitúa un pin en un punto supuesto.",
     });
   });
-  return { incidents, pageTimestamp };
+  return { incidents, pageTimestamp, partial: maintenance || (!nodes.length && !knownEmpty) };
 }
 const definitions = [
   {
@@ -124,10 +133,11 @@ export async function fetchAdif() {
   return Promise.all(
     definitions.map(async (def) => {
       const previous = cache.get(def.id);
-      if (previous && now - previous.attemptedAt < 300) return previous;
+      const interval = def.id === 'adif-traffic' ? 60 : 300;
+      if (previous && now - previous.attemptedAt < interval) return previous;
       const base = {
         ...def,
-        cadence: "Consulta cada 5 min",
+        cadence: def.id === 'adif-traffic' ? 'Consulta cada minuto' : 'Consulta cada 5 min',
         scope:
           "Extracción de boletines públicos HTML de Adif, no una API ni un canal interno de maquinistas. Fecha de actualización de página cuando existe; no equivale a fecha de cada aviso.",
       };
@@ -140,9 +150,10 @@ export async function fetchAdif() {
         const parsed = parseAdif(await response.text(), def.id, def.url, now);
         const source: DataSource = {
           ...base,
-          status: "ok",
+          status: parsed.partial || (parsed.pageTimestamp != null && (now - parsed.pageTimestamp > 86400 || parsed.pageTimestamp - now > 300)) ? 'stale' : 'ok',
           timestamp: parsed.pageTimestamp,
           fetchedAt: now,
+          ...(parsed.partial ? { error: 'Adif indica mantenimiento o la extracción es parcial. Se conservan los comunicados recuperados, sin confirmar cobertura completa.' } : {}),
         };
         const result = {
           incidents: parsed.incidents,
