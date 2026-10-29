@@ -17,6 +17,7 @@ import {
   TriangleAlert,
   X,
 } from "lucide-react";
+import { Analytics } from "@vercel/analytics/react";
 import type { Incident, Page, Stop, Train } from "./types";
 import { cn, formatTime, matchesTrain } from "./lib/utils";
 import { useNetwork } from "./hooks/useNetwork";
@@ -798,6 +799,7 @@ function App() {
           </IconButton>
         </div>
       )}
+      <Analytics />
     </>
   );
 }
